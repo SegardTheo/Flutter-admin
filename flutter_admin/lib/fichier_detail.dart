@@ -18,6 +18,17 @@ class _FichierDetailPageState extends State<FichierDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).secondaryHeaderColor,
+                    ])
+            ),
+          ),
           // Here we take the value from the MyHomePage object that was created by
           // the App.build method, and use it to set our appbar title.
           title: const Text("Détail"),
@@ -25,10 +36,15 @@ class _FichierDetailPageState extends State<FichierDetailPage> {
         body: p.extension(widget.fichier.path) == '.jpg' ? ListView(
           children: [
             Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(20),
               margin: const EdgeInsets.all(20),
-              child: Text(p.basename(widget.fichier.path),
+              alignment: Alignment.center,
+              child: Text(p.basenameWithoutExtension((widget.fichier.path)),
                 style: const TextStyle(
-                  fontSize: 15
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple
                 )),
             ),
             InteractiveViewer(
@@ -44,7 +60,7 @@ class _FichierDetailPageState extends State<FichierDetailPage> {
           ],
         ) : Container(
             alignment: Alignment.center,
-            child: Text(p.basename((widget.fichier.path))),
+            child: Text(p.basenameWithoutExtension((widget.fichier.path))),
             decoration: BoxDecoration(
                 color: Colors.deepPurple,
                 borderRadius: BorderRadius.circular(15)))

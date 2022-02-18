@@ -1,13 +1,13 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
-import 'dossier.dart';
+import '../models/dossier.dart';
+import '../models/fichier.dart';
 
 class DossierService {
   late List<Dossier> dossiers = [];
-  late List<FileSystemEntity> fichiers = [];
+  late List<Fichier> fichiers = [];
   late List<FileSystemEntity> fichiersEtDossiers = [];
 
   static Future<String> get localPath async {
@@ -30,18 +30,22 @@ class DossierService {
           dossiers.add(Dossier(fichiersEtDossiers[i], false));
           break;
         case "File":
-          fichiers.add(fichiersEtDossiers[i]);
+          fichiers.add(Fichier(fichiersEtDossiers[i], false));
           break;
       }
     }
   }
 
-  static void supprimerDossier(String dossierSupprimer) async {
+  static Future<void> supprimerDossier(String dossierSupprimer) async {
     Directory? dossier = Directory('${await DossierService.localPath}/$dossierSupprimer/');
 
     if (await dossier.exists()) {
       dossier.deleteSync(recursive: true);
     }
+  }
+
+  static Future<void> supprimerFichier(FileSystemEntity fichierSupprimer) async {
+    fichierSupprimer.delete();
   }
 
   static Future<File> get localFile async {

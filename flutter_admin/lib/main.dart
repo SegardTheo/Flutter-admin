@@ -1,12 +1,16 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_admin/dossier.dart';
-import 'package:flutter_admin/dossier_service.dart';
-import 'package:flutter_admin/navigation_service.dart';
+import 'package:flutter_admin/models/dossier.dart';
+import 'package:flutter_admin/models/utilisateur.dart';
+import 'package:flutter_admin/services/bdd.dart';
+import 'package:flutter_admin/services/dossier_service.dart';
+import 'package:flutter_admin/services/message_service.dart';
+import 'package:flutter_admin/services/navigation_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+
+import 'models/fichier.dart';
 
 Future<void> main() async {
   runApp(const MyApp());
@@ -14,6 +18,19 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+   static const Map<int, Color> color =
+  {
+    50:Color.fromRGBO(4,131,184, .1),
+    100:Color.fromRGBO(4,131,184, .2),
+    200:Color.fromRGBO(4,131,184, .3),
+    300:Color.fromRGBO(4,131,184, .4),
+    400:Color.fromRGBO(4,131,184, .5),
+    500:Color.fromRGBO(4,131,184, .6),
+    600:Color.fromRGBO(4,131,184, .7),
+    700:Color.fromRGBO(4,131,184, .8),
+    800:Color.fromRGBO(4,131,184, .9),
+    900:Color.fromRGBO(4,131,184, 1),
+  };
 
   // This widget is the root of your application.
   @override
@@ -22,9 +39,11 @@ class MyApp extends StatelessWidget {
       title: 'Admin Théo',
       theme: ThemeData(
           colorScheme: ColorScheme.fromSwatch(
-            brightness: Brightness.dark,
-            primarySwatch: Colors.purple,
+            brightness: Brightness.light,
+            primarySwatch: const MaterialColor(0xFF7433A8, color)
           ),
+          secondaryHeaderColor: Color(0xFFF514CE0),
+          cardColor: Color(0xFFF514CE0).withOpacity(0.5),
           fontFamily: 'Hind',
           textTheme: const TextTheme(
             headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
@@ -56,29 +75,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
-  List<Dossier> _dossiers = [];
-  List<FileSystemEntity> _fichiers = [];
-  final DossierService _dossierService = DossierService();
-
-  Future<File> writeCounter(String text) async {
-    final file = await DossierService.localFile;
-
-    // Write the file
-    return file.writeAsString(text);
-  }
-
-  Future<String> _nomFichier(Directory dossier) async {
-    return p.basename(dossier.path);
-  }
+  final TextEditingController _controllerMdp = TextEditingController();
+  late final Bdd bdd;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     () async {
-      await _dossierService.getDir();
-      setState(() {
-        _dossiers = _dossierService.dossiers;
-        _fichiers = _dossierService.fichiers;
-      });
+      bdd = Bdd();
+      await bdd.ouvreBDD();
     }();
 
     super.initState();
@@ -92,135 +97,114 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-        ),
-        body: Container(
-          margin: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Dossier',
-                  hintText: 'ajouter un dossier ...',
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(20),
-                child: Flex(
-                    direction: Axis.horizontal,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: 24.0,
+    return Scaffold(resizeToAvoidBottomInset: false,
+        body: Column(
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 0.3,
+              child: Stack(
+                children: [
+                  Image.network("https://png.pngtree.com/thumb_back/fw800/background/20190221/ourmid/pngtree-purple-blue-simple-gradient-background-image_16162.jpg",
+                      fit: BoxFit.cover, width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.3),
+                  Positioned.fill(
+                    child: Align(
+                        alignment: Alignment.center,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.black26,
+                            border: Border.all(
+                              color: Colors.black38,
+                            ),
+                            borderRadius: const BorderRadius.all(Radius.circular(7))
                         ),
-                        label: const Text('Ajouter'),
-                        onPressed: () async {
-                          await DossierService.createFolderInAppDocDir(
-                              _controller.text);
-                          DossierService dossierService = DossierService();
-                          await dossierService.getDir();
-
-                          setState(() {
-                            _dossiers = [];
-                            _dossiers = dossierService.dossiers;
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.deepPurple,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
+                        padding: const EdgeInsets.all(10),
+                        child: const Text("App Admin",
+                          style: TextStyle(
+                              fontSize: 30, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            ),
+            Container(
+                margin: const EdgeInsets.all(20),
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Form(
+                    key: _formKey,
+                    child: Column(children: [
+                      Container(
+                          margin: const EdgeInsets.all(30),
+                          child: const Text("Connexion",
+                              style: TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold))),
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        child: TextFormField(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez renseigner ce champ';
+                            }
+                            return null;
+                          },
+                          controller: _controller,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Username',
+                            hintText: 'Username ...',
                           ),
                         ),
                       ),
-                      ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.highlight_remove,
-                          color: Colors.white,
-                          size: 24.0,
-                        ),
-                        label: const Text('Supprimer'),
-                        onPressed: () async {
-                          for (int i = 0; i < _dossiers.length; i++) {
-                            if (_dossiers[i].estSelectionne) {
-                              DossierService.supprimerDossier(
-                                  p.basename((_dossiers[i].dossier.path)));
-                              _dossiers.removeAt(i);
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        child: TextFormField(
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez renseigner ce champ';
                             }
-                          }
+                            return null;
+                          },
+                          controller: _controllerMdp,
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'Mot de passe'),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(20),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.star,
+                            color: Colors.white,
+                            size: 24.0,
+                          ),
+                          label: const Text('Connexion'),
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              if (await bdd.checkLogin(
+                                  _controller.text, _controllerMdp.text)) {
 
-                          setState(() {});
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
+                                MessageService.afficheMessage(context, "Connexion réussie !", Colors.green);
+                                NavigationService.navigateToDossiers(context);
+                              } else {
+                                MessageService.afficheMessage(context, "Utilisateur introuvable !", Colors.red);
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.deepPurple
                           ),
                         ),
                       )
-                    ]),
-              ),
-              Expanded(
-                  child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 200,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20),
-                      itemCount: _dossiers.length,
-                      itemBuilder: (BuildContext ctx, index) {
-                        Dossier dossier = _dossiers[index];
-                        return InkWell(
-                            onTap: () {
-                              NavigationService.navigateToDetail(
-                                  context, p.basename((dossier.dossier.path)));
-                            },
-                            onLongPress: () {
-                              dossier.estSelectionne =
-                                  dossier.estSelectionne ? false : true;
-
-                              setState(() {});
-                            },
-                            child: Card(
-                                child: Column(
-                              children: [
-                                Container(
-                                    child: dossier.estSelectionne
-                                        ? const Icon(
-                                            Icons.check_box,
-                                            color: Colors.deepPurpleAccent,
-                                            size: 24.0,
-                                            semanticLabel:
-                                                'Text to announce in accessibility modes',
-                                          )
-                                        : const Icon(
-                                            Icons.check_box_outline_blank,
-                                            color: Colors.deepPurpleAccent,
-                                            size: 24.0,
-                                            semanticLabel:
-                                                'Text to announce in accessibility modes',
-                                          ),
-                                    alignment: Alignment.centerRight),
-                                const Icon(
-                                  Icons.drive_folder_upload,
-                                  size: 80,
-                                  semanticLabel:
-                                      'Text to announce in accessibility modes',
-                                ),
-                                Text(p.basename((dossier.dossier.path)))
-                              ],
-                            )));
-                      }))
-            ],
-          ),
-        ));
+                    ]))
+            ),
+          ],
+        )
+   );
   }
 }
