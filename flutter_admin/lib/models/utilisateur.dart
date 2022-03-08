@@ -1,16 +1,16 @@
 class Utilisateur {
-  final int id;
+  final int? id;
   final String nomUtilisateur;
   final String mdp;
+  final int? dossierId;
 
   const Utilisateur({
-    required this.id,
     required this.nomUtilisateur,
     required this.mdp,
+    this.id,
+    this.dossierId
   });
 
-  // Convert a Dog into a Map. The keys must correspond to the names of the
-  // columns in the database.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -18,9 +18,14 @@ class Utilisateur {
       'mdp': mdp,
     };
   }
+  Map<String, dynamic> toMapInsert() {
+    return {
+      'nomUtilisateur': nomUtilisateur,
+      'mdp': mdp,
+      'dossierId': dossierId,
+    };
+  }
 
-  // Implement toString to make it easier to see information about
-  // each dog when using the print statement.
   @override
   String toString() {
     return 'Dog{id: $id, nomUtilisateur: $nomUtilisateur, mdp: $mdp}';

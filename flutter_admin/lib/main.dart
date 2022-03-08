@@ -1,16 +1,9 @@
-import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_admin/models/dossier.dart';
-import 'package:flutter_admin/models/utilisateur.dart';
 import 'package:flutter_admin/services/bdd.dart';
 import 'package:flutter_admin/services/dossier_service.dart';
 import 'package:flutter_admin/services/message_service.dart';
 import 'package:flutter_admin/services/navigation_service.dart';
-import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
-
-import 'models/fichier.dart';
 
 Future<void> main() async {
   runApp(const MyApp());
@@ -76,8 +69,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _controllerMdp = TextEditingController();
+  final TextEditingController _controllerSignupNom = TextEditingController();
+  final TextEditingController _controllerSignupMdp = TextEditingController();
   late final Bdd bdd;
   final _formKey = GlobalKey<FormState>();
+  final _formSignupKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -175,32 +171,154 @@ class _MyHomePageState extends State<MyHomePage> {
                               labelText: 'Mot de passe'),
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.all(20),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(
-                            Icons.star,
-                            color: Colors.white,
-                            size: 24.0,
-                          ),
-                          label: const Text('Connexion'),
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              if (await bdd.checkLogin(
-                                  _controller.text, _controllerMdp.text)) {
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(
+                                Icons.star,
+                                color: Colors.white,
+                                size: 24.0,
+                              ),
+                              label: const Text('Connexion'),
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate()) {
+                                  if (await bdd.checkLogin(
+                                      _controller.text, _controllerMdp.text)) {
 
-                                MessageService.afficheMessage(context, "Connexion réussie !", Colors.green);
-                                NavigationService.navigateToDossiers(context);
-                              } else {
-                                MessageService.afficheMessage(context, "Utilisateur introuvable !", Colors.red);
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                              primary: Colors.deepPurple
+                                    MessageService.afficheMessage(context, "Connexion réussie !", Colors.green);
+                                    NavigationService.navigateToDossiers(context);
+                                  } else {
+                                    MessageService.afficheMessage(context, "Utilisateur introuvable !", Colors.red);
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.deepPurple
+                              ),
+                            ),
                           ),
-                        ),
-                      )
+                          Container(
+                            margin: const EdgeInsets.only(left: 10),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(
+                                Icons.person_add,
+                                color: Colors.white,
+                                size: 24.0,
+                              ),
+                              label: const Text('S\'inscrire'),
+                              onPressed: () async {
+                                showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return SizedBox(
+                                          height: 300,
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                  alignment: Alignment.topRight,
+                                                  child: ElevatedButton.icon(
+                                                    icon: const Icon(
+                                                      Icons.close,
+                                                      color: Colors.white,
+                                                      size: 24.0,
+                                                    ),
+                                                    label: const Text('Fermer'),
+                                                    onPressed: () async {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                      primary: Colors.red,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius:
+                                                        BorderRadius.circular(20.0),
+                                                      ),
+                                                    ),
+                                                  )),
+                                              Form(
+                                                key: _formSignupKey,
+                                                child: Column(
+                                                  children: [
+                                                    Container(
+                                                      margin: const EdgeInsets.only(top: 20, bottom: 10, left: 20, right: 20),
+                                                      child: TextFormField(
+                                                        validator: (value) {
+                                                          if (value == null ||
+                                                              value.isEmpty) {
+                                                            return 'Veuillez renseigner ce champ';
+                                                          }
+                                                          return null;
+                                                        },
+                                                        controller: _controllerSignupNom,
+                                                        decoration:
+                                                        const InputDecoration(
+                                                          border: OutlineInputBorder(),
+                                                          labelText: 'Nom utilisateur',
+                                                          hintText:
+                                                          'James...',
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      margin: const EdgeInsets.only(bottom: 10, left: 20, right: 20),
+                                                      child: TextFormField(
+                                                        validator: (value) {
+                                                          if (value == null ||
+                                                              value.isEmpty) {
+                                                            return 'Veuillez renseigner ce champ';
+                                                          }
+                                                          return null;
+                                                        },
+                                                        controller: _controllerSignupMdp,
+                                                        decoration:
+                                                        const InputDecoration(
+                                                          border: OutlineInputBorder(),
+                                                          labelText: 'Mdp',
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    ElevatedButton.icon(
+                                                      icon: const Icon(
+                                                        Icons.check,
+                                                        color: Colors.white,
+                                                        size: 24.0,
+                                                      ),
+                                                      label: const Text('Valider'),
+                                                      onPressed: () async {
+                                                        if (_formSignupKey.currentState!.validate()) {
+                                                          String resultSignup = await bdd.signup(_controllerSignupNom.text, _controllerSignupMdp.text);
+
+                                                          if (resultSignup == "") {
+                                                            return await MessageService.afficheMessageModal(context, "Inscription réussie !", Colors.green);
+                                                          } else {
+                                                            return await MessageService.afficheMessageModal(context, resultSignup, Colors.red);
+                                                          }
+                                                        }
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                        primary: Colors.deepPurple,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                          BorderRadius.circular(20.0),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ));
+                                    });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.deepPurple
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ]))
             ),
           ],

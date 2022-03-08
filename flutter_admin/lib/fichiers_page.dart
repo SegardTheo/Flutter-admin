@@ -227,7 +227,6 @@ class _FichiersPageState extends State<FichiersPage> {
                                                     });
 
                                                     Navigator.pop(context);
-
                                                     MessageService.afficheMessage(
                                                         context,
                                                         "Fichier(s) ajouté(s)",
@@ -241,8 +240,7 @@ class _FichiersPageState extends State<FichiersPage> {
                                                 primary: Colors.deepPurple,
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                      BorderRadius.circular(20.0),
                                                 ),
                                               ),
                                             )
