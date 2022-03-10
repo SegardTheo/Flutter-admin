@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_admin/services/api.dart';
 import 'package:flutter_admin/services/message_service.dart';
 import 'package:path/path.dart' as p;
 
@@ -29,7 +29,7 @@ class _FichiersPageState extends State<FichiersPage> {
   List<File> fichiersASauvegarder = [];
   late bool isTest = false;
   final _formKey = GlobalKey<FormState>();
-  late PDFDocument _pdf;
+  Api api = Api();
 
   @override
   void initState() {
@@ -37,9 +37,6 @@ class _FichiersPageState extends State<FichiersPage> {
       cheminDossier = await DossierService.localPath + "/" + widget.nomDossier;
 
       await dossierService.getDir(cheminDossier: widget.nomDossier);
-
-      _pdf = await PDFDocument.fromURL(
-          'https://www.kindacode.com/wp-content/uploads/2021/07/test.pdf');
 
       setState(() {
         _fichiers = dossierService.fichiers;
@@ -362,45 +359,83 @@ class _FichiersPageState extends State<FichiersPage> {
                                 ],
                               )
                             :
-                        Stack(
-                          children: [
-                            Image(
-                              image: MemoryImage(_convertPdfToBytes),
-                            ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: fichier.estSelectionne
-                                  ? const Icon(
-                                Icons.check_box,
-                                color: Colors.deepPurpleAccent,
-                                size: 24.0,
-                                semanticLabel:
-                                'Text to announce in accessibility modes',
-                              )
-                                  : const Icon(
-                                Icons.check_box_outline_blank,
-                                color: Colors.deepPurpleAccent,
-                                size: 24.0,
-                                semanticLabel:
-                                'Text to announce in accessibility modes',
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                color: Colors.black54,
-                                padding: const EdgeInsets.all(10),
-                                child: Text(
-                                  p.basenameWithoutExtension(
-                                      (fichier.fichier.path)),
-                                  style: const TextStyle(
-                                      fontSize: 10, color: Colors.white),
+                        FutureBuilder<ConvertApi>(
+                          future: api.fetchPdfToJpg(fichier.fichier),
+                          builder: (BuildContext context, AsyncSnapshot<ConvertApi> snapshot) {
+                            List<Widget> children = [];
+
+                            if (snapshot.hasData) {
+                                children = <Widget>[
+                                  Stack(
+                                    children: [
+                                      Image.memory(snapshot.data!.FileData),
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: fichier.estSelectionne
+                                            ? const Icon(
+                                          Icons.check_box,
+                                          color: Colors.deepPurpleAccent,
+                                          size: 24.0,
+                                          semanticLabel:
+                                          'Text to announce in accessibility modes',
+                                        )
+                                            : const Icon(
+                                          Icons.check_box_outline_blank,
+                                          color: Colors.deepPurpleAccent,
+                                          size: 24.0,
+                                          semanticLabel:
+                                          'Text to announce in accessibility modes',
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          color: Colors.black54,
+                                          padding: const EdgeInsets.all(10),
+                                          child: Text(
+                                            p.basenameWithoutExtension(
+                                                (fichier.fichier.path)),
+                                            style: const TextStyle(
+                                                fontSize: 10, color: Colors.white),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                ];
+
+                            } else if (snapshot.hasError) {
+                              children = <Widget>[
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 60,
                                 ),
-                              ),
-                            )
-                          ],
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Text('Error: ${snapshot.error}'),
+                                )
+                              ];
+                            } else {
+                              children = const <Widget>[
+                                SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: CircularProgressIndicator(),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 16),
+                                  child: Text('Chargement ...'),
+                                )
+                              ];
+                            }
+
+                            return Stack(
+                              children: children,
+                            );
+                          },
                         )
                         /* FutureBuilder<PDFDocument?>(
                           future: fichier.chargerPdf(),

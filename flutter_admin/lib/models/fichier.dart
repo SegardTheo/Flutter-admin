@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
-
-import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
+import 'dart:typed_data';
+import 'package:flutter_admin/services/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdf/pdf.dart';
 
@@ -11,13 +12,13 @@ class Fichier {
 
   Fichier(this.fichier, this.estSelectionne);
 
-  Future<PDFDocument?> chargerPdf() async
+  Future<dynamic> pdfToJpg() async
   {
-    if(p.extension(fichier.path) == '.pdf')
+    /*if(p.extension(fichier.path) == '.pdf')
     {
-      return await PDFDocument.fromFile(File(fichier.path));
-    }
-
-    return null;
+      Api api = Api();
+      ConvertApi convertApi = await api.fetchPdfToJpg(fichier);
+      imagePdf = base64.decode(convertApi.FileData);
+    }*/
   }
 }

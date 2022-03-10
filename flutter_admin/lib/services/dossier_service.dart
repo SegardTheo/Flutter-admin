@@ -21,9 +21,14 @@ class DossierService {
 
   Future<void> getDir({String? cheminDossier = ""}) async {
     final dir = await DossierService.localPath;
-    String pdfDirectory = '$dir/$cheminDossier';
-    final myDir = Directory(pdfDirectory);
-    fichiersEtDossiers = myDir.listSync(recursive: true);
+    final dossierUtilisateur = Directory('$dir/$cheminDossier');
+
+    if(!await dossierUtilisateur.exists())
+    {
+      dossierUtilisateur.create();
+    }
+
+    fichiersEtDossiers = dossierUtilisateur.listSync(recursive: true);
 
     for (int i = 0; i < fichiersEtDossiers.length; i++) {
       String? type = fichiersEtDossiers[i].absolute.toString().split(":")[0];
@@ -33,7 +38,10 @@ class DossierService {
           dossiers.add(Dossier(fichiersEtDossiers[i], false));
           break;
         case "File":
-          fichiers.add(Fichier(fichiersEtDossiers[i], false));
+          Fichier fichier = Fichier(fichiersEtDossiers[i], false);
+          await fichier.pdfToJpg();
+
+          fichiers.add(fichier);
           break;
       }
     }

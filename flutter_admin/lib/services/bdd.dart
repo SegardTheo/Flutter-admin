@@ -59,6 +59,7 @@ class Bdd {
         id: resultatsUtilisateurs.first['id'] as int,
         nomUtilisateur: resultatsUtilisateurs.first['nomUtilisateur'] as String,
         mdp: resultatsUtilisateurs.first['mdp'] as String,
+        dossierId: resultatsUtilisateurs.first['dossierId'] as int,
       );
 
       LocalStorageService.save(utilisateur);
