@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_admin/services/local_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 
 import '../models/dossier.dart';
 import '../models/fichier.dart';
@@ -13,8 +14,9 @@ class DossierService {
 
   static Future<String> get localPath async {
     final directory = await getApplicationDocumentsDirectory();
+    String? dossierUtilisateur = await LocalStorageService.read("dossierId");
 
-    return directory.path + "/FichiersPrives" + LocalStorageService.read("dossierId");
+    return directory.path + "/FichiersPrives/" + dossierUtilisateur;
   }
 
   Future<void> getDir({String? cheminDossier = ""}) async {

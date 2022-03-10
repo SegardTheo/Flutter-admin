@@ -51,9 +51,9 @@ class Bdd {
 
   Future<bool> checkLogin(String nomUtilisateur, String mdp) async {
     // Query the table for all The Dogs.
-    List<Map<String, Object?>> resultatsUtilisateurs =  await bdd.rawQuery('SELECT COUNT(*) FROM Utilisateur where nomUtilisateur = ? and mdp = ?', [nomUtilisateur, mdp]);
+    List<Map<String, Object?>> resultatsUtilisateurs =  await bdd.rawQuery('SELECT * FROM Utilisateur where nomUtilisateur = ? and mdp = ?', [nomUtilisateur, mdp]);
 
-    if(resultatsUtilisateurs.first.isNotEmpty)
+    if(resultatsUtilisateurs.isNotEmpty)
     {
       Utilisateur utilisateur = Utilisateur(
         id: resultatsUtilisateurs.first['id'] as int,

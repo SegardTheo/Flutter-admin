@@ -55,7 +55,7 @@ class _DossiersPageState extends State<DossiersPage> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.power_settings_new, color: Colors.red),
+            icon: const Icon(Icons.power_settings_new, color: Color.fromRGBO(232, 64, 95, 1)),
           ),
           title: const Text("Dossiers"),
         ),
@@ -180,11 +180,11 @@ class _DossiersPageState extends State<DossiersPage> {
                                 } else {
                                   MessageService.afficheMessage(
                                       context, "Aucun dossier sélectionné !",
-                                      Colors.red);
+                                      const Color.fromRGBO(232, 64, 95, 1));
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                primary: Colors.red
+                                primary: const Color.fromRGBO(232, 64, 95, 1)
                               ),
                             )
                           ]),

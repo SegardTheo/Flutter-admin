@@ -7,13 +7,16 @@ class LocalStorageService
     final prefs = await SharedPreferences.getInstance();
     const key = 'dossierId';
     final value = utilisateur.dossierId;
-    prefs.setInt(key, value!);
-    print('saved $value');
+
+    if(value != null)
+    {
+      prefs.setInt(key, value);
+    }
   }
-  static read(String keyParam) async {
+  static Future<String> read(String keyParam) async {
     final prefs = await SharedPreferences.getInstance();
     final key = keyParam;
 
-    return prefs.getInt(key);
+    return prefs.getInt(key).toString();
   }
 }

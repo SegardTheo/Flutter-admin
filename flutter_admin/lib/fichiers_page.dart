@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ class _FichiersPageState extends State<FichiersPage> {
   List<File> fichiersASauvegarder = [];
   late bool isTest = false;
   final _formKey = GlobalKey<FormState>();
+  late PDFDocument _pdf;
 
   @override
   void initState() {
@@ -35,6 +37,10 @@ class _FichiersPageState extends State<FichiersPage> {
       cheminDossier = await DossierService.localPath + "/" + widget.nomDossier;
 
       await dossierService.getDir(cheminDossier: widget.nomDossier);
+
+      _pdf = await PDFDocument.fromURL(
+          'https://www.kindacode.com/wp-content/uploads/2021/07/test.pdf');
+
       setState(() {
         _fichiers = dossierService.fichiers;
       });
@@ -49,6 +55,7 @@ class _FichiersPageState extends State<FichiersPage> {
     // Write the file
     return file.writeAsString(text);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +96,6 @@ class _FichiersPageState extends State<FichiersPage> {
                             context: context,
                             builder: (context) {
                               return SizedBox(
-                                  height: 300,
                                   child: Column(
                                     children: [
                                       Container(
@@ -105,7 +111,7 @@ class _FichiersPageState extends State<FichiersPage> {
                                               Navigator.pop(context);
                                             },
                                             style: ElevatedButton.styleFrom(
-                                              primary: Colors.red,
+                                              primary: const Color.fromRGBO(232, 64, 95, 1),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(20.0),
@@ -137,6 +143,23 @@ class _FichiersPageState extends State<FichiersPage> {
                                                 ),
                                               ),
                                             ),
+                                            SizedBox(
+                                              height: 100,
+                                              child:  DecoratedBox(
+                                                child: ListView.builder(
+                                                  itemCount: fichiersASauvegarder.length,
+                                                  itemBuilder: (BuildContext context, int index) {
+                                                    return ListTile(title: Text(p.basenameWithoutExtension((fichiersASauvegarder[index].path)), style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Color(0xFFF3f3f3f)
+                                                    )));
+                                                  },
+                                                ),
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFFFe5e5e5)
+                                                )
+                                              )
+                                            ),
                                             ElevatedButton.icon(
                                               icon: const Icon(
                                                 Icons.file_download,
@@ -146,22 +169,17 @@ class _FichiersPageState extends State<FichiersPage> {
                                               label: const Text(
                                                   'Ajouter des fichiers'),
                                               onPressed: () async {
-                                                FilePickerResult? result =
-                                                    await FilePicker.platform
-                                                        .pickFiles(
-                                                            allowMultiple:
-                                                                true);
+                                                FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
                                                 if (result != null) {
                                                   setState(() {
                                                     fichiersASauvegarder =
-                                                        result.paths
-                                                            .map((path) =>
-                                                                File(path!))
-                                                            .toList();
+                                                        result.paths.map((path) => File(path!)).toList();
                                                   });
                                                 } else {
-                                                  log("ERREUR");
+                                                  MessageService.afficheMessage(
+                                                      context, "erreur !",
+                                                      const Color.fromRGBO(232, 64, 95, 1));
                                                 }
                                               },
                                               style: ElevatedButton.styleFrom(
@@ -184,24 +202,13 @@ class _FichiersPageState extends State<FichiersPage> {
                                               onPressed: () async {
                                                 if (_formKey.currentState!
                                                     .validate()) {
-                                                  if (fichiersASauvegarder
-                                                      .isNotEmpty) {
-                                                    for (int i = 0;
-                                                        i <
-                                                            fichiersASauvegarder
-                                                                .length;
-                                                        i++) {
-                                                      File fichierASauvegarder =
-                                                          fichiersASauvegarder[
-                                                              i];
+                                                  if (fichiersASauvegarder.isNotEmpty) {
+                                                    for (int i = 0; i < fichiersASauvegarder.length; i++) {
+                                                      File fichierASauvegarder = fichiersASauvegarder[i];
 
-                                                      String nomFichier =
-                                                          _controller.text;
-                                                      if (fichiersASauvegarder
-                                                              .length >
-                                                          1) {
-                                                        nomFichier +=
-                                                            "_" + i.toString();
+                                                      String nomFichier = _controller.text;
+                                                      if (fichiersASauvegarder.length > 1) {
+                                                        nomFichier += "_" + i.toString();
                                                       }
 
                                                       fichierASauvegarder.copy(
@@ -213,17 +220,14 @@ class _FichiersPageState extends State<FichiersPage> {
                                                                       .path)));
                                                     }
 
-                                                    DossierService
-                                                        dossierService =
-                                                        DossierService();
-                                                    await dossierService.getDir(
-                                                        cheminDossier:
-                                                            widget.nomDossier);
+                                                    DossierService dossierService = DossierService();
+                                                    await dossierService.getDir(cheminDossier: widget.nomDossier);
 
                                                     setState(() {
                                                       _fichiers = [];
                                                       _fichiers = dossierService
                                                           .fichiers;
+                                                      fichiersASauvegarder = [];
                                                     });
 
                                                     Navigator.pop(context);
@@ -232,7 +236,7 @@ class _FichiersPageState extends State<FichiersPage> {
                                                         "Fichier(s) ajouté(s)",
                                                         Colors.green);
                                                   } else {
-                                                    return await MessageService.afficheMessageModal(context, "Aucun fichiers sélectionnés", Colors.red);
+                                                    return await MessageService.afficheMessageModal(context, "Aucun fichiers sélectionnés", const Color.fromRGBO(232, 64, 95, 1));
                                                   }
                                                 }
                                               },
@@ -285,7 +289,7 @@ class _FichiersPageState extends State<FichiersPage> {
                         setState(() {});
                       },
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.red,
+                        primary: const Color.fromRGBO(232, 64, 95, 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0),
                         ),
@@ -357,16 +361,118 @@ class _FichiersPageState extends State<FichiersPage> {
                                   )
                                 ],
                               )
-                            : Stack(
+                            :
+                        Stack(
+                          children: [
+                            Image(
+                              image: MemoryImage(_convertPdfToBytes),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: fichier.estSelectionne
+                                  ? const Icon(
+                                Icons.check_box,
+                                color: Colors.deepPurpleAccent,
+                                size: 24.0,
+                                semanticLabel:
+                                'Text to announce in accessibility modes',
+                              )
+                                  : const Icon(
+                                Icons.check_box_outline_blank,
+                                color: Colors.deepPurpleAccent,
+                                size: 24.0,
+                                semanticLabel:
+                                'Text to announce in accessibility modes',
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                color: Colors.black54,
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  p.basenameWithoutExtension(
+                                      (fichier.fichier.path)),
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.white),
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                        /* FutureBuilder<PDFDocument?>(
+                          future: fichier.chargerPdf(),
+                          builder: (BuildContext context, AsyncSnapshot<PDFDocument?> snapshot) {
+                            List<Widget> children = [];
+
+                            if (snapshot.hasData) {
+
+                              PDFDocument pdf = PDFDocument();
+                              print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                              if(snapshot.data != null)
+                              {
+                                pdf = snapshot.data as PDFDocument;
+
+                                children = <Widget>[
+                                  PDFViewer(document: pdf)
+                                ];
+
+                              }
+                            } else if (snapshot.hasError) {
+                              children = <Widget>[
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 60,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Text('Error: ${snapshot.error}'),
+                                )
+                              ];
+                            } else {
+                              children = const <Widget>[
+                                SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: CircularProgressIndicator(),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 16),
+                                  child: Text('Awaiting result...'),
+                                )
+                              ];
+                            }
+
+                            return Stack(
+                                children: children,
+                              );
+                          },
+                        )*/
+
+                      ,
+
+                       /* Stack(
                                 children: [
                                   Container(
                                       alignment: Alignment.center,
-                                      child: Text(p.basenameWithoutExtension(
-                                          (fichier.fichier.path))),
+                                      child: Flex(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        direction: Axis.vertical,
+                                        children: [
+                                          Text(p.basenameWithoutExtension(
+                                              (fichier.fichier.path))),
+                                          Text(p.basenameWithoutExtension(
+                                              (fichier.fichier.path)))
+                                        ],
+                                      ),
                                       decoration: BoxDecoration(
-                                          color: Colors.grey,
+                                          color: Color(0xFFFd8d8d8),
                                           borderRadius:
-                                              BorderRadius.circular(15))),
+                                              BorderRadius.circular(4))
+                                  ),
                                   Positioned(
                                     top: 5,
                                     right: 5,
@@ -387,7 +493,9 @@ class _FichiersPageState extends State<FichiersPage> {
                                           ),
                                   ),
                                 ],
-                              ));
+                              ) */
+
+                    );
                   }),
             ))
           ],
