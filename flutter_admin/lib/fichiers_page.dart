@@ -296,6 +296,8 @@ class _FichiersPageState extends State<FichiersPage> {
                           for (int i = 0; i < fichiersAEnlever.length; i++) {
                             _fichiers.remove(fichiersAEnlever[i]);
                           }
+                        } else {
+                          return MessageService.afficheMessage(context, "Aucun fichiers sélectionnés", const Color.fromRGBO(232, 64, 95, 1));
                         }
 
                         setState(() {});
