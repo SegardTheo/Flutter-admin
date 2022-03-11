@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_admin/models/reinitialisation_mdp.dart';
 import 'package:flutter_admin/models/utilisateur.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -31,14 +30,6 @@ class Bdd {
     return await bdd.insert(
       'Utilisateur',
       utilisateur.toMapInsert(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<int> insertReinitialisationMdp(ReinitialisationMdp reinitialisationMdp) async {
-    return await bdd.insert(
-      'ReinitialisationMdp',
-      reinitialisationMdp.toMapInsert(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
