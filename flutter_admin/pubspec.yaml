@@ -37,6 +37,11 @@ dependencies:
   shared_preferences: ^2.0.13
   pdf: ^3.7.1
   http: ^0.13.4
+  advance_pdf_viewer: ^2.0.1
+  syncfusion_flutter_pdfviewer: ^19.4.55-beta
+  thumbnailer: ^2.0.1
+  font_awesome_flutter: ^9.2.0
+  flutter_mailer: ^2.0.1
 
 dev_dependencies:
   flutter_test:

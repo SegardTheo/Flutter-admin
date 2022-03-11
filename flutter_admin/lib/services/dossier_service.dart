@@ -2,16 +2,28 @@ import 'dart:io';
 
 import 'package:flutter_admin/services/local_storage_service.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-
 import '../models/dossier.dart';
 import '../models/fichier.dart';
+import 'package:path/path.dart' as p;
 
 class DossierService {
   late List<Dossier> dossiers = [];
   late List<Fichier> fichiers = [];
   late List<FileSystemEntity> fichiersEtDossiers = [];
+  static final List<String> extensionList = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG'];
+  static final List<String> extensionListPdf = ['.pdf', '.PDF'];
 
+  static bool isImage(String cheminFichier)
+  {
+     return extensionList.contains(p.extension(cheminFichier));
+  }
+
+  static bool isPdf(String cheminFichier)
+  {
+    return extensionListPdf.contains(p.extension(cheminFichier));
+  }
+
+  // Récupère le chemin du dossier personnalisé de l'utilisateur
   static Future<String> get localPath async {
     final directory = await getApplicationDocumentsDirectory();
     String? dossierUtilisateur = await LocalStorageService.read("dossierId");
@@ -19,6 +31,7 @@ class DossierService {
     return directory.path + "/FichiersPrives/" + dossierUtilisateur;
   }
 
+  // Récupère tous les dossiers et fichier de l'utilisateur
   Future<void> getDir({String? cheminDossier = ""}) async {
     final dir = await DossierService.localPath;
     final dossierUtilisateur = Directory('$dir/$cheminDossier');
@@ -39,7 +52,6 @@ class DossierService {
           break;
         case "File":
           Fichier fichier = Fichier(fichiersEtDossiers[i], false);
-          await fichier.pdfToJpg();
 
           fichiers.add(fichier);
           break;
@@ -47,7 +59,7 @@ class DossierService {
     }
   }
 
-  static Future<void> supprimerDossier(String dossierSupprimer) async {
+  static Future<void> deleteDirectory(String dossierSupprimer) async {
     Directory? dossier = Directory('${await DossierService.localPath}/$dossierSupprimer/');
 
     if (await dossier.exists()) {
@@ -55,15 +67,11 @@ class DossierService {
     }
   }
 
-  static Future<void> supprimerFichier(FileSystemEntity fichierSupprimer) async {
+  static Future<void> deleteFile(FileSystemEntity fichierSupprimer) async {
     fichierSupprimer.delete();
   }
 
-  static Future<File> get localFile async {
-    final path = await DossierService.localPath;
-    return File('$path/counter.txt');
-  }
-
+  // Créée un dossier dans le dossier personnalisé de l'utilisateur
   static Future<String> createFolderInAppDocDir(String folderName) async {
     final Directory _appDocDirFolder =
     Directory('${await DossierService.localPath}/$folderName/');

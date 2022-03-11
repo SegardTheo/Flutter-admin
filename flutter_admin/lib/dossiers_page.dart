@@ -1,14 +1,10 @@
-import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_admin/models/dossier.dart';
 import 'package:flutter_admin/services/dossier_service.dart';
-import 'package:flutter_admin/services/local_storage_service.dart';
 import 'package:flutter_admin/services/message_service.dart';
 import 'package:flutter_admin/services/navigation_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
-
-import 'models/fichier.dart';
 
 class DossiersPage extends StatefulWidget {
   const DossiersPage({Key? key}) : super(key: key);
@@ -27,6 +23,8 @@ class _DossiersPageState extends State<DossiersPage> {
   void initState() {
 
     () async {
+
+      // Récupère les dossiers et fichiers de l'utilisateur
       await _dossierService.getDir();
       setState(() {
         _dossiers = _dossierService.dossiers;
@@ -63,6 +61,7 @@ class _DossiersPageState extends State<DossiersPage> {
           margin: const EdgeInsets.all(20),
           child: Column(
             children: [
+              // Card explicative
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -94,6 +93,7 @@ class _DossiersPageState extends State<DossiersPage> {
                   ),
                 ),
               ),
+              // Formulaire création dossier
               Form(
                 key: _formKey,
                 child: Flex(
@@ -128,10 +128,13 @@ class _DossiersPageState extends State<DossiersPage> {
                               label: const Text('Ajouter'),
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
+
+                                  // Créée le dossier
                                   await DossierService.createFolderInAppDocDir(
                                       _controller.text);
-                                  DossierService dossierService =
-                                      DossierService();
+                                  DossierService dossierService = DossierService();
+
+                                  // Refresh la liste des dossiers
                                   await dossierService.getDir();
 
                                   MessageService.afficheMessage(
@@ -159,7 +162,7 @@ class _DossiersPageState extends State<DossiersPage> {
 
                                 for (int i = 0; i < _dossiers.length; i++) {
                                   if (_dossiers[i].estSelectionne) {
-                                    await DossierService.supprimerDossier(p
+                                    await DossierService.deleteDirectory(p
                                         .basename((_dossiers[i].dossier.path)));
                                     dossiersAEnlever.add(_dossiers[i]);
                                   }
@@ -192,6 +195,7 @@ class _DossiersPageState extends State<DossiersPage> {
                   ],
                 ),
               ),
+              // Liste les dossiers
               Expanded(
                   child: GridView.builder(
                       physics: const BouncingScrollPhysics(),
@@ -208,6 +212,8 @@ class _DossiersPageState extends State<DossiersPage> {
                               NavigationService.navigateToDetail(
                                   context, p.basename((dossier.dossier.path)));
                             },
+
+                            // Sélectionne un dossier pour suppression
                             onLongPress: () {
                               dossier.estSelectionne =
                                   dossier.estSelectionne ? false : true;

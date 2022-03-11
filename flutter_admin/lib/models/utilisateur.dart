@@ -28,6 +28,6 @@ class Utilisateur {
 
   @override
   String toString() {
-    return 'Dog{id: $id, nomUtilisateur: $nomUtilisateur, mdp: $mdp}';
+    return 'Utilisateur{id: $id, nomUtilisateur: $nomUtilisateur, mdp: $mdp}';
   }
 }
