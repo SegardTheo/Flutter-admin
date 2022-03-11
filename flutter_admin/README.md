@@ -4,7 +4,7 @@ Projet de gestion de dossiers et fichiers.
 
 ## Technologies
 
-- Flutter, Android 12 pour certaines lib, sqlite
+- Flutter, Android 12 pour certaines lib, sqlite, LocalStorage
 
 ## Librairies
 
